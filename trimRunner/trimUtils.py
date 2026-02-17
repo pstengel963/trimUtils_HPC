@@ -87,6 +87,11 @@ def makeTrimInputString(data,mass_dict,material_dict):
   energy = data["energy_keV"]
   ion_name = data["ionSymbol"]
   target_name = data["material"]
+  
+  # include optional argument for EXYZ output
+  exyzStep = 0
+  if "exyzStep_keV" in data:
+    exyzStep = data["exyzStep_keV"]
 
   Z = mass_dict[ion_name]["Z"]
   mass = mass_dict[ion_name]["mass_amu"]
@@ -111,19 +116,27 @@ def makeTrimInputString(data,mass_dict,material_dict):
   lines=[]
   headerLine = "==> SRIM-2013.00 This file controls TRIM Calculations."
   ionHeaderLine = "Ion: Z1 ,  M1,  Energy (keV), Angle,Number,Bragg Corr,AutoSave Number."
-  ionLine = "     {0}   {1:.3f}         {2}       0  {3} 0    {4}".format(Z,mass,energy,nps,nps+1)
+  ionLine = "     {0}   {1:.3f}         {2}       0  {3} 1    {4}".format(Z,mass,energy,nps,nps+1)
   lines.append(headerLine)
   lines.append(ionHeaderLine)
   lines.append(ionLine)
 
   cascadeHeaderLine = "Cascades(1=No;2=Full;3=Sputt;4-5=Ions;6-7=Neutrons), Random Number Seed, Reminders"
   cascadeLine = f"     {calcMode}     0     0"
+  #include optional random seed
+  if "seed" in data:
+    seed = data["seed"]
+    cascadeLine = f"     {calcMode}     {seed}     0"
   lines.append(cascadeHeaderLine)
   lines.append(cascadeLine)
 
   #Note, 1 = new file, 2 = extend
   diskHeaderLine = "Diskfiles (0=no,1=yes): Ranges, Backscatt, Transmit, Sputtered, Collisions(1=Ion;2=Ion+Recoils), Special EXYZ.txt file"
   diskLine = "     0     0     0     0     2     0"
+  #include optional EXYZ output
+  if exyzStep > 0:
+    diskLine = "     0     0     0     0     2     {0:.3f}".format(exyzStep*10**3)
+  
   lines.append(diskHeaderLine)
   lines.append(diskLine)
 
@@ -155,12 +168,12 @@ def makeTrimInputString(data,mass_dict,material_dict):
      layerHeaderLine+="    Stoich"
   lines.append(layerHeaderLine)
   for i,layer_name in enumerate(layer_names):
-    layerLine = '{0}      "{1}"           {2}  {3:.3f}'.format(i,layer_name,layer_depths[i],layer_densities[i])
+    layerLine = '{0}      "{1}"           {2}  {3:.3f}'.format(i+1,layer_name,layer_depths[i],layer_densities[i])
     for stoich in layer_stoichs[i]:
-      layerLine+="    {0}".format(stoich)
+      layerLine+="    {0:.6f}".format(stoich/sum(layer_stoichs[i]))
     lines.append(layerLine)
 
-  layerPhaseHeaderLine = "Target layer phases (0=Solid, 1=Gas)"
+  layerPhaseHeaderLine = "0 Target layer phases (0=Solid, 1=Gas)"
   layerPhaseLine=""
   for layer_phase in layer_phases:
     layerPhaseLine+="{0} ".format(layer_phase)
@@ -195,8 +208,8 @@ def makeTrimInputString(data,mass_dict,material_dict):
     targetElementSBELine+="{0} ".format(SBE)
   lines.append(targetElementSBELine)
 
-  stoppingPowerHeaderline="Stopping Power Version (1=2008, 0=2008)"
-  stoppingPowerLine=" 1"
+  stoppingPowerHeaderline="Stopping Power Version (1=2011, 0=2011)"
+  stoppingPowerLine=" 0"
   lines.append(stoppingPowerHeaderline)
   lines.append(stoppingPowerLine)
   return lines
@@ -221,15 +234,29 @@ def runSRIM(srimFolder,input_data,mass_dict,materials_dict):
         line += "\n"
       f.write(line)
 
-  exit_code = os.system("TRIM.exe")
+  exit_code = os.system("todos TRIM.IN")
   if exit_code != 0:
-    raise RuntimeError(f"TRIM.exe failed with exit_code={exit_code}")
+    raise RuntimeError(f"todos TRIM.IN failed with exit_code={exit_code}")  
+
+  exit_code = os.system("wine TRIM.exe")
+  if exit_code != 0:
+    raise RuntimeError(f"wine TRIM.exe failed with exit_code={exit_code}")
 
   collison_path = os.path.join(srimFolder, "SRIM Outputs", "COLLISON.txt")
   if not os.path.exists(collison_path):
     raise RuntimeError("TRIM completed but COLLISON.txt not found")
 
-  return collison_path
+  if "exyzStep_keV" in input_data:
+    
+    exyz_path = os.path.join(srimFolder, "SRIM Outputs", "EXYZ.txt")
+    if not os.path.exists(exyz_path):
+      raise RuntimeError("TRIM completed but EXYZ.txt not found")
+    
+    return collison_path, exyz_path
+  
+  else:
+
+    return collison_path
 
 def createMaterialsDict():
   materials_dict = {}
@@ -259,6 +286,20 @@ def createMaterialsDict():
     "densities": [3.32],
     #stoichs correspond to target_elements
     "stoichs": [[0.4,1.6,1.0,4.0]]}
+  #Lunar Olivine - (FeMg)SiO4 from https://arxiv.org/pdf/2405.15845
+  materials_dict["Lunar_Olivine"] = {
+    "nElements": 4,
+    "element_names": ["Fe","Mg","Si","O"],
+    "element_masses": [55.845,24.305,28.085,15.999], #Natural abundances, atomic masses
+    "Zs": [26,12,14,8],
+    #From default TRIM.IN confuration file
+    "TDEs": [25,25,15,28], #eV, displacement energy for each element.
+    "LBEs": [3,3,2,3], #eV, lattice binding energies
+    "SBEs": [4.34,1.54,4.7,2], #eV, surface binding energies
+    #https://webmineral.com/data/Olivine.shtml
+    "densities": [3.32],
+    #stoichs correspond to target_elements
+    "stoichs": [[1.0,1.0,1.0,4.0]]}
   #Diamond
   materials_dict["Diamond"] = {
     "nElements": 1,

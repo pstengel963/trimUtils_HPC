@@ -1,0 +1,11 @@
+{
+    "material":"Lunar_Olivine",
+    "ionSymbol":"4He",
+    "outputPath":"/Users/patrickstengel/Documents/TRIM_tracks_CCs/trimUtils/trimRunner/TRIM_out/",
+    "runMode":"damage",
+    "calcMode":"full",
+    "energy_keV":10000,
+    "nps":1000,
+    "exyzStep_keV":10,
+    "seed":0
+}
