@@ -1,4 +1,4 @@
-# trimRunner.py
+# trimRunner.py and trimRunner_HPC.py
 Code for running trim via a python script on linux/macOS. Utilizes both wine
 
 https://www.winehq.org/
