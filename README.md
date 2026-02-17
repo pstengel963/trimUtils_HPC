@@ -1,5 +1,19 @@
-# trimRunner.py
-Code for running trim via a python script. Uses trimUtils.py to actually generate the TRIM input. Each trim instance runs in its own temporary folder. This project is designed to simulate primaries 5-10% above the highest energy you will need, and then in the parser script we save tracks from lower energy particles (primaries after collisions) to avoid needing to do thousands of individual TRIM sims. Output is the standard TRIM ASCII output, gzip'd. Requires an input config file (see example). Has a separate mode for calculating efficiencies vs. tracks.
+# trimRunner.py and trimRunner_HPC.py
+Code for running trim via a python script on linux/macOS. Utilizes both wine
+
+https://www.winehq.org/
+
+and tofrodos
+
+https://www.thefreecountry.com/tofrodos/index.shtml
+
+to operate trim in a linux enviornemnt. You also need to dowload SRIM-2013
+
+http://www.srim.org/SRIM/SRIMLEGL.htm
+
+which can be unzipped with wine. The flag in the TRIMAUTO file should be set to 1. SRIM_EXE_PATH and SRIM_TMP_PATH then need to be set appropraitely in trimRunner.py and/or trimRunner_HPC.py
+
+trimUtils.py actually generates the TRIM input. Each trim instance runs in its own temporary folder. This project is designed to simulate primaries 5-10% above the highest energy you will need, and then in the parser script we save tracks from lower energy particles (primaries after collisions) to avoid needing to do thousands of individual TRIM sims. Output is the standard TRIM ASCII output, gzip'd. Requires an input config file (see example).
 
 # collisionParser.py
 Python code for parsing TRIM COLLISON.txt.gz (sic) files. Saves output as a root or h5 file. While the TRIM sims are not "binned" in energy, we impose an artificial binning in the output of this code so limit the number of individual tracks stored at each primary energy, either via linear or log binning. These files can get very large, so it is recommended to set the min/max energy you care about, as nBins and maxTracksPerBin to get manageable file sizes. NOTE: this is just a library of TRIM tracks, it does NOT incorporate efficiencies--some recoils near threshold may produce 0 vacancies, so a separate efficiency curve must be calculated/used with this data for realistic tracks (maybe we want to modify this later).
