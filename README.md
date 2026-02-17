@@ -9,7 +9,7 @@ https://www.thefreecountry.com/tofrodos/index.shtml
 
 to operate trim in a linux enviornemnt. You also need to dowload SRIM-2013
 
-http://www.srim.org/SRIM/SRIMLEGL.htm
+http://www.srim.org/
 
 which can be unzipped with wine. The flag in the TRIMAUTO file should be set to 1. SRIM_EXE_PATH and SRIM_TMP_PATH then need to be set appropraitely in trimRunner.py and/or trimRunner_HPC.py
 
