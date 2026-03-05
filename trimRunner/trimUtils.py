@@ -286,6 +286,20 @@ def createMaterialsDict():
     "densities": [3.32],
     #stoichs correspond to target_elements
     "stoichs": [[0.4,1.6,1.0,4.0]]}
+    #Michigan Olivine - (Fe0.2Mg1.8)SiO4
+  materials_dict["Michigan_Olivine"] = {
+    "nElements": 4,
+    "element_names": ["Fe","Mg","Si","O"],
+    "element_masses": [55.845,24.305,28.085,15.999], #Natural abundances, atomic masses
+    "Zs": [26,12,14,8],
+    #From K. Sun
+    "TDEs": [40,20,37,40], #eV, displacement energy for each element.
+    "LBEs": [3,3,2,3], #eV, lattice binding energies
+    "SBEs": [4.34,1.54,4.7,2], #eV, surface binding energies
+    #https://webmineral.com/data/Olivine.shtml
+    "densities": [3.32],
+    #stoichs correspond to target_elements
+    "stoichs": [[0.2,1.8,1.0,4.0]]}
   #Lunar Olivine - (FeMg)SiO4 from https://arxiv.org/pdf/2405.15845
   materials_dict["Lunar_Olivine"] = {
     "nElements": 4,

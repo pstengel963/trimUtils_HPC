@@ -18,8 +18,10 @@ materials_dict = trimUtils.createMaterialsDict()
 input_data = trimUtils.parseConfig(inpFilename)
 trimUtils.checkTrimArgs(input_data,mass_dict,materials_dict)
 
-SRIM_EXE_PATH= "/Users/patrickstengel/Documents/SRIM-2013"
-SRIM_TMP_PATH = "/Users/patrickstengel/Documents/TRIM_tracks_CCs/trimUtils/trimRunner/SRIM_tmp"
+#SRIM_EXE_PATH = "/Users/patrickstengel/Documents/SRIM-2013"
+#SRIM_TMP_PATH = "/Users/patrickstengel/Documents/TRIM_tracks_CCs/trimUtils/trimRunner/SRIM_tmp"
+SRIM_EXE_PATH = input_data["srimPath"]
+SRIM_TMP_PATH = input_data["tmpPath"]
 
 target_name = input_data["material"]
 ion_name = input_data["ionSymbol"]
